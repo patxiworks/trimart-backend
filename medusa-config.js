@@ -74,7 +74,7 @@ const modules = {
     resolve: "@medusajs/cache-redis",
     options: {
       redisUrl: REDIS_URL
-    }
+    }   
   },
 };
 
