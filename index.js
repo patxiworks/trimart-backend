@@ -10,7 +10,7 @@ const loaders = require("@medusajs/medusa/dist/loaders/index").default;
 
     try {
       const { container } = await loaders({
-        directory,
+        directory,     
         expressApp: app,
       });
       const configModule = container.resolve("configModule");
