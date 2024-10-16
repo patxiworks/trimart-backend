@@ -30,7 +30,7 @@ const STORE_CORS = process.env.STORE_CORS || "https://trimart-front.vercel.app/,
 
 const DATABASE_URL =
   process.env.DATABASE_URL ||
-  "postgres://postgres:4125@localhost:5432/medusa-db-b6ohe";
+  "postgresql://postgres:2c6f*C543*D2-bd-Cg62b-eggb3d4FC1@roundhouse.proxy.rlwy.net:44580/railway";
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
@@ -44,7 +44,7 @@ const plugins = [
     },
   },
   {
-    resolve: "@medusajs/admin",
+    resolve: "@medusajs/admin",  
     /** @type {import('@medusajs/admin').PluginOptions} */
     options: {
       autoRebuild: true,
@@ -65,18 +65,18 @@ const plugins = [
 ];
 
 const modules = {
-  /*eventBus: {
-    resolve: "@medusajs/event-bus-redis",
-    options: {
-      redisUrl: REDIS_URL
-    }
-  },
-  cacheService: {
-    resolve: "@medusajs/cache-redis",
-    options: {
-      redisUrl: REDIS_URL
-    }
-  },*/
+  // eventBus: {
+  //   resolve: "@medusajs/event-bus-redis",
+  //   options: {
+  //     redisUrl: REDIS_URL
+  //   }
+  // },
+  // cacheService: {
+  //   resolve: "@medusajs/cache-redis",
+  //   options: {
+  //     redisUrl: REDIS_URL
+  //   }
+  // },
 };
 
 /** @type {import('@medusajs/medusa').ConfigModule["projectConfig"]} */
