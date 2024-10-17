@@ -1,70 +1,50 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-const crypto = require("crypto");
+const { GracefulShutdownServer } = require("medusa-core-utils");
 
-const router = express.Router();
+const loaders = require("@medusajs/medusa/dist/loaders/index").default;
 
-router.use(bodyParser.json());
+(async () => {
+  async function start() {
+    const app = express();
+    const directory = process.cwd();
 
-router.post("/paystack-webhook", async (req, res) => {
-  const event = req.body;
+    try {
+      const { container } = await loaders({
+        directory,     
+        expressApp: app,
+      });
+      const configModule = container.resolve("configModule");
+      const port = process.env.PORT ?? configModule.projectConfig.port ?? 9000;
 
-  const signature = req.headers["x-paystack-signature"];
+      const server = GracefulShutdownServer.create(
+        app.listen(port, (err) => {
+          if (err) {
+            return;
+          }
+          console.log(`Server is ready on port: ${port}`);
+        })
+      );
 
-  if (!verifyPaystackSignature(event, signature)) {
-    return res.status(400).send("Invalid signature");
-  }
-
-  try {
-    switch (event.event) {
-      case "charge.success":
-        await handleSuccessfulPayment(req, event);
-        break;
-      case "refund.success":
-        await handleSuccessfulRefund(req, event);
-        break;
-      default:
-        console.log(`Unhandled event type: ${event.event}`);
+      // Handle graceful shutdown
+      const gracefulShutDown = () => {
+        server
+          .shutdown()
+          .then(() => {
+            console.info("Gracefully stopping the server.");
+            process.exit(0);
+          })
+          .catch((e) => {
+            console.error("Error received when shutting down the server.", e);
+            process.exit(1);
+          });
+      };
+      process.on("SIGTERM", gracefulShutDown);
+      process.on("SIGINT", gracefulShutDown);
+    } catch (err) {
+      console.error("Error starting server", err);
+      process.exit(1);
     }
-
-    res.status(200).send("Webhook received");
-  } catch (error) {
-    console.error("Error processing Paystack webhook:", error);
-    res.status(500).send("Internal Server Error");
   }
-});
 
-function verifyPaystackSignature(payload, signature) {
-  const secret = process.env.PAYSTACK_SECRET_KEY;
-  const hash = crypto
-    .createHmac("sha512", secret)
-    .update(JSON.stringify(payload))
-    .digest("hex");
-  return hash === signature;
-}
-
-async function handleSuccessfulPayment(req, event) {
-  const data = event.data;
-
-  const orderService = req.scope.resolve("orderService");
-
-  await orderService.update(data.metadata.order_id, {
-    status: "paid",
-  });
-
-  console.log(`Payment successful for order: ${data.metadata.order_id}`);
-}
-
-async function handleSuccessfulRefund(req, event) {
-  const data = event.data;
-
-  const orderService = req.scope.resolve("orderService");
-
-  await orderService.update(data.metadata.order_id, {
-    status: "refunded",
-  });
-
-  console.log(`Refund successful for order: ${data.metadata.order_id}`);
-}
-
-module.exports = router;
+  await start();
+})();
