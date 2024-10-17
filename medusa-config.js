@@ -33,7 +33,7 @@ const DATABASE_URL =
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
-const PAYSTACK_SECRET_KEY = "sk_test_29c537abb9e76553318d2b366e432e76b5134200"
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || "sk_test_29c537abb9e76553318d2b366e432e76b5134200"
 
 const plugins = [
   `medusa-fulfillment-manual`,
